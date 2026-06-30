@@ -52,3 +52,13 @@ def require_anthropic_api_key() -> str:
             "ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key."
         )
     return key
+
+
+def claude_cli_path() -> str | None:
+    """Prefer an explicit override, then the system `claude` binary over the SDK bundle."""
+    override = os.getenv("VB_CLAUDE_CLI_PATH")
+    if override:
+        path = Path(override)
+        return str(path) if path.exists() else override
+    from shutil import which
+    return which("claude")

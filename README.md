@@ -42,6 +42,28 @@ See [`docs/SETUP.md`](docs/SETUP.md) for the dependency layers (core / stats / d
 and dataset setup. To actually run agents, copy `.env.example` to `.env` and add your
 `ANTHROPIC_API_KEY`.
 
+## Talk to the agents
+
+Once `ANTHROPIC_API_KEY` is in `.env` and the Claude Code CLI is installed
+(`npm install -g @anthropic-ai/claude-code`), each agent's domain MCP tools are bridged in-process
+via the Agent SDK:
+
+```bash
+vb list                                              # the 11 agents + their tools
+vb agent statistical_genetics "Assess OSMR genetic evidence in ulcerative colitis"
+vb ask "Evaluate OSMR as a therapeutic target in ulcerative colitis"   # full CSO orchestration
+vb ask "..." --dry-run                               # routing trace only, no model calls
+```
+
+(`vb` is installed by `pip install -e .`; equivalently `python -m virtual_biotech.cli ...`.)
+
+To explore the data tools directly without any agent/key:
+
+```bash
+python scripts/explore.py call open_targets get_target_genetic_evidence ensembl_id=ENSG00000145623
+python scripts/explore.py                             # interactive REPL
+```
+
 ## Run the reference MCP server
 
 ```bash

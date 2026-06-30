@@ -19,6 +19,9 @@ dependencies = [
     "tenacity>=8.2",
 ]
 
+[project.scripts]
+vb = "virtual_biotech.cli:main"
+
 [project.optional-dependencies]
 stats = ["statsmodels>=0.14", "scipy>=1.11", "numpy>=1.26", "pandas>=2.1", "lifelines>=0.28"]
 singlecell = ["scanpy>=1.10", "anndata>=0.10", "harmonypy>=0.0.10", "pydeseq2>=0.4",

@@ -329,6 +329,8 @@ virtual-biotech/
 | Session 6 | 3c — Cohort driver | ✅ analysis/trial_outcomes/extract_cohort.py: cohort→extractor→harness→feature join→stats; --demo/--agent/--limit |
 | Session 6 | Testing | ✅ 166 unit tests incl. cohort parsing + end-to-end cohort integration |
 | | | **Phase 3 complete.** To run at full scale: download the OT known-drugs + Tabula Sapiens datasets, set ANTHROPIC_API_KEY, run extract_cohort --mode agent. |
+| Session 7 | 2a — Agent runtime | ✅ FastMCP→Agent SDK bridge (`create_sdk_mcp_server`), real `BaseAgent.run`, `vb` CLI (`list`/`agent`/`ask`), interactive `explore.py`. 177 tests. |
+| | | **Agents callable end-to-end** (needs Claude Code CLI on PATH). Next: case studies. |
 
 ### MCP server status
 
