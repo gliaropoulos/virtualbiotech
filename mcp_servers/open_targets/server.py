@@ -101,7 +101,7 @@ async def get_target_known_drugs(
     clinical phase, status, and indication — i.e. clinical precedence for the pharmacologist.
     """
     data = await client.target_known_drugs(ensembl_id, size=size)
-    kd = client.summarize_known_drugs(data)
+    kd = client.summarize_known_drugs(data, limit=size)
     return _env(
         f"{kd['symbol']}: {kd['count']} known drug entries.", kd,
         preview=kd["drugs"][:5],

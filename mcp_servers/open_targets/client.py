@@ -21,10 +21,10 @@ async def execute(query: str, variables: dict[str, Any], endpoint: str = ENDPOIN
     """Run a GraphQL query and return the `data` object (raising on GraphQL errors)."""
     async with httpx.AsyncClient(timeout=_TIMEOUT, headers=_HEADERS) as c:
         resp = await c.post(endpoint, json={"query": query, "variables": variables})
-        resp.raise_for_status()
         body = resp.json()
     if body.get("errors"):
         raise RuntimeError(f"Open Targets GraphQL errors: {body['errors']}")
+    resp.raise_for_status()
     return body.get("data", {})
 
 
@@ -44,7 +44,7 @@ async def target_associated_diseases(ensembl_id: str, size: int = 25, **kw) -> d
 
 
 async def target_known_drugs(ensembl_id: str, size: int = 25, **kw) -> dict[str, Any]:
-    return await execute(queries.TARGET_KNOWN_DRUGS, {"ensemblId": ensembl_id, "size": size}, **kw)
+    return await execute(queries.TARGET_KNOWN_DRUGS, {"ensemblId": ensembl_id}, **kw)
 
 
 async def disease_details(efo_id: str, **kw) -> dict[str, Any]:
@@ -97,18 +97,48 @@ def genetic_evidence(assoc_data: dict[str, Any], disease_id: str | None = None) 
     return {"symbol": t.get("approvedSymbol"), "hasGeneticEvidence": has_genetic, "diseases": out}
 
 
-def summarize_known_drugs(data: dict[str, Any]) -> dict[str, Any]:
+def _clinical_stage_to_phase(stage: str | None) -> int | None:
+    if not stage or not stage.startswith("PHASE_"):
+        return None
+    phase = stage.removeprefix("PHASE_")
+    if phase == "1_2":
+        return 1
+    try:
+        return int(phase)
+    except ValueError:
+        return None
+
+
+def _format_status(status: str | None) -> str | None:
+    if not status:
+        return None
+    return status.replace("_", " ").title()
+
+
+def summarize_known_drugs(data: dict[str, Any], limit: int | None = None) -> dict[str, Any]:
     t = data.get("target") or {}
-    kd = t.get("knownDrugs") or {}
-    rows = [
-        {
-            "drug": (r.get("drug") or {}).get("name"),
-            "modality": (r.get("drug") or {}).get("drugType"),
-            "moa": r.get("mechanismOfAction"),
-            "maxPhase": r.get("phase"),
-            "status": r.get("status"),
-            "disease": (r.get("disease") or {}).get("name"),
-        }
-        for r in kd.get("rows", [])
-    ]
-    return {"symbol": t.get("approvedSymbol"), "count": kd.get("count", 0), "drugs": rows}
+    dc = t.get("drugAndClinicalCandidates") or {}
+    candidate_rows = dc.get("rows", [])
+    if limit is not None:
+        candidate_rows = candidate_rows[:limit]
+    rows = []
+    for r in candidate_rows:
+        drug = r.get("drug") or {}
+        moa_rows = ((drug.get("mechanismsOfAction") or {}).get("rows") or [])
+        diseases = r.get("diseases") or []
+        reports = r.get("clinicalReports") or []
+        disease_names = [
+            (d.get("disease") or {}).get("name") or d.get("diseaseFromSource")
+            for d in diseases
+            if (d.get("disease") or {}).get("name") or d.get("diseaseFromSource")
+        ]
+        status = next((rep.get("trialOverallStatus") for rep in reports if rep.get("trialOverallStatus")), None)
+        rows.append({
+            "drug": drug.get("name"),
+            "modality": drug.get("drugType"),
+            "moa": moa_rows[0].get("mechanismOfAction") if moa_rows else None,
+            "maxPhase": _clinical_stage_to_phase(r.get("maxClinicalStage") or drug.get("maximumClinicalStage")),
+            "status": _format_status(status),
+            "disease": disease_names[0] if disease_names else None,
+        })
+    return {"symbol": t.get("approvedSymbol"), "count": dc.get("count", 0), "drugs": rows}

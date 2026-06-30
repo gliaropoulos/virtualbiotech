@@ -16,7 +16,7 @@ query Search($q: String!, $entities: [String!]) {
         __typename
         ... on Target { approvedSymbol approvedName biotype }
         ... on Disease { name therapeuticAreas { id name } }
-        ... on Drug { name drugType isApproved }
+        ... on Drug { name drugType }
       }
     }
   }
@@ -59,18 +59,26 @@ query TargetAssoc($ensemblId: String!, $size: Int!) {
 """
 
 TARGET_KNOWN_DRUGS = """
-query KnownDrugs($ensemblId: String!, $size: Int!) {
+query KnownDrugs($ensemblId: String!) {
   target(ensemblId: $ensemblId) {
     id
     approvedSymbol
-    knownDrugs(size: $size) {
+    drugAndClinicalCandidates {
       count
       rows {
-        drug { id name drugType isApproved }
-        mechanismOfAction
-        phase
-        status
-        disease { id name }
+        id
+        maxClinicalStage
+        drug {
+          id
+          name
+          drugType
+          maximumClinicalStage
+          mechanismsOfAction {
+            rows { mechanismOfAction actionType }
+          }
+        }
+        diseases { disease { id name } diseaseFromSource }
+        clinicalReports { id clinicalStage trialOverallStatus title }
       }
     }
   }

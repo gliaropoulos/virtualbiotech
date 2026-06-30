@@ -29,10 +29,15 @@ ASSOC = {"target": {"id": "ENSG00000145623", "approvedSymbol": "OSMR", "associat
          "datatypeScores": [{"id": "known_drug", "score": 0.6}]},
     ]}}}
 
-DRUGS = {"target": {"approvedSymbol": "OSMR", "knownDrugs": {"count": 1, "rows": [
-    {"drug": {"id": "CHEMBL1", "name": "Vixarelimab", "drugType": "Antibody", "isApproved": False},
-     "mechanismOfAction": "OSMR antagonist", "phase": 2, "status": "Terminated",
-     "disease": {"id": "EFO_0000729", "name": "ulcerative colitis"}}]}}}
+DRUGS = {"target": {"approvedSymbol": "OSMR", "drugAndClinicalCandidates": {"count": 1, "rows": [{
+    "maxClinicalStage": "PHASE_2",
+    "drug": {
+        "id": "CHEMBL1", "name": "Vixarelimab", "drugType": "Antibody", "maximumClinicalStage": "PHASE_2",
+        "mechanismsOfAction": {"rows": [{"mechanismOfAction": "OSMR antagonist", "actionType": "INHIBITOR"}]},
+    },
+    "diseases": [{"disease": {"id": "EFO_0000729", "name": "ulcerative colitis"}, "diseaseFromSource": "ulcerative colitis"}],
+    "clinicalReports": [{"id": "nct06137183", "clinicalStage": "PHASE_2", "trialOverallStatus": "TERMINATED", "title": "UC trial"}],
+}]}}}
 
 
 def test_first_target_hit_skips_non_targets():
