@@ -1,0 +1,17 @@
+# Single-cell / spatial stack for the data-gated servers and case studies 2 & 3.
+# Heavy and platform-specific — install only when running the single-cell analyses.
+# Install:  pip install -r requirements-singlecell.txt   (pulls in stats + core too)
+
+-r requirements-stats.txt
+
+scanpy>=1.10                # QC, normalization, HVG, UMAP
+anndata>=0.10               # .h5ad atlas I/O (Tabula Sapiens)
+harmonypy>=0.0.10           # batch integration
+pydeseq2>=0.4               # pseudobulk differential expression
+decoupler>=1.6              # PROGENy pathway activity (OSMR / UC case study)
+cellxgene-census>=1.15      # CELLxGENE Census API (cell-type expression / DE)
+
+# NOTE: two extra tools used in the paper are intentionally NOT pinned here because they are
+# large and environment-specific. Install them separately when needed:
+#   - liana            (cell-cell communication; `pip install liana`)
+#   - cell2location    (spatial deconvolution; needs PyTorch/GPU — see its install docs)

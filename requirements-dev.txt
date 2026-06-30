@@ -1,0 +1,9 @@
+# Development environment: everything needed to run the test suite + lint.
+# Install:  pip install -r requirements-dev.txt   (this is the recommended dev setup)
+
+-r requirements-stats.txt
+
+pytest>=8.0
+pytest-asyncio>=0.23
+respx>=0.21                 # HTTP mocking for MCP client tests
+ruff>=0.4                  # lint / format

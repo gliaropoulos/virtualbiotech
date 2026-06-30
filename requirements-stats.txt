@@ -1,0 +1,12 @@
+# Statistical stack for the clinical-trial outcome pipeline (Phase 3).
+# Powers: logistic/beta regression, mixed-effects GLMM, permutation tests, BH FDR,
+# single-cell feature math, and survival analysis (case studies).
+# Install:  pip install -r requirements-stats.txt   (pulls in requirements.txt too)
+
+-r requirements.txt
+
+numpy>=1.26
+scipy>=1.11
+pandas>=2.1
+statsmodels>=0.14           # GLM (logistic), BetaModel, BinomialBayesMixedGLM — replaces all R
+lifelines>=0.28             # Cox survival (B7-H3 LUAD biomarker-stratified analysis)

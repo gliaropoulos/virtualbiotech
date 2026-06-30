@@ -1,0 +1,16 @@
+# Core runtime dependencies for the Virtual Biotech platform.
+# Mirrors [project].dependencies in pyproject.toml.
+# Install:  pip install -r requirements.txt
+#
+# This is enough to run the orchestration layer and the MCP servers that use public APIs
+# (clinicaltrials, open_targets, pubmed, openfda, dailymed, gnomad, cbioportal).
+# For the trial-outcome statistics add requirements-stats.txt; for the single-cell case
+# studies add requirements-singlecell.txt.
+
+claude-agent-sdk>=0.1.0      # hierarchical agent orchestration (the CSO + scientist agents)
+fastmcp>=2.0.0               # MCP servers (the data tool layer)
+pydantic>=2.6               # schemas + validation (ClinicalTrialData, tool params)
+httpx>=0.27                 # async HTTP for the API-backed MCP servers
+anyio>=4.3                  # async runtime
+python-dotenv>=1.0          # load .env (ANTHROPIC_API_KEY, endpoints)
+tenacity>=8.2               # retry/backoff for network calls
