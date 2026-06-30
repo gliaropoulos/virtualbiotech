@@ -40,6 +40,9 @@ lint:
 run-demo:
 	$(BIN)/python analysis/trial_outcomes/run_pipeline.py
 
+explore:
+	$(BIN)/python scripts/explore.py
+
 run-cohort:
 	$(BIN)/python analysis/trial_outcomes/extract_cohort.py --demo
 
