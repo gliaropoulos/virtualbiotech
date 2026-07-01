@@ -69,8 +69,10 @@ class BaseAgent:
         Requires the Claude Agent SDK *and* the Claude Code CLI on PATH (the SDK runs the agent loop
         by spawning that CLI). The agent's domain MCP tools are bridged in-process via
         `create_sdk_mcp_server`, so it calls exactly the tested FastMCP tool code.
+
+        Auth is delegated to the Claude CLI: it uses ANTHROPIC_API_KEY (paid API credits) if set,
+        otherwise your `claude login` subscription/OAuth session. So no API key is strictly required.
         """
-        config.require_anthropic_api_key()
         try:
             from claude_agent_sdk import (  # type: ignore
                 AssistantMessage, TextBlock, query,

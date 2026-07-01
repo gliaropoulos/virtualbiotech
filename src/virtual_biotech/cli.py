@@ -35,11 +35,15 @@ def cmd_list() -> None:
 
 
 def _require_runtime() -> None:
-    config.require_anthropic_api_key()
-    cli = config.claude_cli_path()
-    if cli is None:
-        print("WARNING: the 'claude' CLI was not found on PATH. Live agent runs need it:\n"
-              "  npm install -g @anthropic-ai/claude-code\n", file=sys.stderr)
+    """Ensure a runnable agent runtime. Auth can be an API key (paid credits) OR a Claude
+    subscription via the CLI's OAuth login — so the API key is not strictly required."""
+    if config.claude_cli_path() is None:
+        raise SystemExit(
+            "The 'claude' CLI is required for live agent runs but was not found on PATH.\n"
+            "  Install: npm install -g @anthropic-ai/claude-code")
+    if config.anthropic_api_key() is None:
+        print("No ANTHROPIC_API_KEY set — the run will use your Claude CLI login "
+              "(subscription/OAuth) if you've run `claude login`.\n", file=sys.stderr)
 
 
 def cmd_agent(key: str, task: str, max_turns: int | None) -> None:

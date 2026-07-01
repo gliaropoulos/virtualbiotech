@@ -16,6 +16,12 @@ try:  # optional convenience; not required
 except Exception:  # pragma: no cover
     pass
 
+# A blank `ANTHROPIC_API_KEY=` line in .env sets the var to "" in the environment, which the Claude
+# CLI still counts as an auth source and uses *instead of* your claude.ai subscription login. Drop
+# empty/whitespace values so subscription (OAuth) auth can take over cleanly.
+if not (os.getenv("ANTHROPIC_API_KEY") or "").strip():
+    os.environ.pop("ANTHROPIC_API_KEY", None)
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = Path(os.getenv("VB_DATA_DIR", REPO_ROOT / "data"))
 SESSIONS_DIR = REPO_ROOT / "sessions"
