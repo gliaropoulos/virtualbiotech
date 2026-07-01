@@ -122,5 +122,71 @@ async def get_disease_details(
     )
 
 
+# ---- granular genetics tools (L2G, credible sets, QTL colocalization) ---------
+
+@mcp.tool
+async def get_gwas_credible_set_evidence(
+    ensembl_id: Annotated[str, Field(description="Ensembl gene ID, e.g. 'ENSG00000145623'")],
+    efo_id: Annotated[str, Field(description="EFO disease ID, e.g. 'EFO_0000729' (ulcerative colitis)")],
+    size: Annotated[int, Field(description="Max credible-set evidence rows", ge=1, le=200)] = 25,
+) -> dict:
+    """Retrieve GWAS credible-set evidence linking a target to a disease, ranked by L2G score.
+
+    Each row is a fine-mapped credible set whose causal gene is (predicted to be) this target: it
+    carries the locus-to-gene (L2G) score, the lead variant (id + rsID), the association p-value /
+    beta / odds ratio, and the study. Use the returned studyLocusId with get_credible_set to drill
+    into fine-mapping posterior probabilities and QTL colocalization.
+    """
+    data = await client.disease_gwas_evidence(ensembl_id, efo_id, size=size)
+    s = client.genetics.summarize_gwas_evidence(data)
+    return _env(
+        f"{s['count']} GWAS credible-set evidence row(s) for the target in {s['disease']}; "
+        f"top L2G={s['topL2G']} (locus {s['topLocus']}).",
+        s, preview={"topL2G": s["topL2G"], "topLocus": s["topLocus"]},
+    )
+
+
+@mcp.tool
+async def get_credible_set(
+    study_locus_id: Annotated[str, Field(description="Study-locus (credible set) ID from GWAS evidence")],
+) -> dict:
+    """Retrieve one fine-mapped credible set in full: the finemapping method, lead variant, the 95%
+    credible-set variants with their posterior probabilities, the L2G gene predictions, and QTL
+    colocalization rows (H4 and CLPP).
+
+    This is where fine-mapping confidence lives — e.g. a lead variant with posterior probability
+    ~0.9997 indicates a well-resolved causal signal; high H4/CLPP indicate a GWAS signal that
+    colocalizes with a molecular QTL.
+    """
+    data = await client.credible_set(study_locus_id)
+    s = client.genetics.summarize_credible_set(data)
+    top_member = s.get("topMember") or {}
+    top_coloc = s.get("topColoc") or {}
+    msg = (f"Credible set {s['studyLocusId']} ({s['finemappingMethod']}): "
+           f"{s['nCredibleSetVariants']} variants; top posterior "
+           f"{top_member.get('posteriorProbability')}.")
+    if s.get("topL2G"):
+        msg += f" Top L2G: {s['topL2G']['symbol']}={s['topL2G']['score']}."
+    if top_coloc:
+        msg += f" Top coloc H4={top_coloc.get('h4')}, CLPP={top_coloc.get('clpp')}."
+    return _env(msg, s, preview={"topMember": top_member, "topL2G": s.get("topL2G")})
+
+
+@mcp.tool
+async def get_variant(
+    variant_id: Annotated[str, Field(description="Variant ID, e.g. '5_38953040_G_A' (chr_pos_ref_alt)")],
+) -> dict:
+    """Retrieve annotation for a variant: rsID(s), location, alleles, most severe consequence, and
+    population allele frequencies. Useful for characterizing a credible set's lead variant.
+    """
+    data = await client.variant(variant_id)
+    s = client.genetics.summarize_variant(data)
+    return _env(
+        f"{s['id']} ({', '.join(s['rsIds'] or []) or 'no rsID'}); "
+        f"consequence: {s['mostSevereConsequence']}.",
+        s, preview={"rsIds": s["rsIds"], "consequence": s["mostSevereConsequence"]},
+    )
+
+
 if __name__ == "__main__":  # pragma: no cover
     mcp.run()

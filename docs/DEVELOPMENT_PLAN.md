@@ -337,7 +337,7 @@ virtual-biotech/
 | Server | Status | Tools |
 |---|---|---|
 | clinicaltrials | ✅ implemented | get_clinical_trial_details, search_clinical_trials, get_trial_adverse_events |
-| open_targets | ✅ implemented | search_entities, get_target_details, get_target_genetic_evidence, get_target_known_drugs, get_disease_details |
+| open_targets | ✅ implemented | search_entities, get_target_details, get_target_genetic_evidence, get_target_known_drugs, get_disease_details, **get_gwas_credible_set_evidence (L2G), get_credible_set (fine-mapping + QTL coloc), get_variant** |
 | pubmed | ✅ implemented | search_pubmed, fetch_abstract, verify_nct_in_article |
 | openfda | ✅ implemented | get_top_adverse_reactions, get_report_counts |
 | cbioportal | ✅ implemented | find_cancer_studies, get_study_details, get_molecular_profiles |
