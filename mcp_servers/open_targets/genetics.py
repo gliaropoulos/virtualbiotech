@@ -28,8 +28,7 @@ query GwasEvidence($efoId: String!, $ensemblId: String!, $size: Int!) {
       count
       rows {
         score
-        studyLocusId
-        variantId
+        variant { id rsIds }
         variantRsId
         pValueMantissa
         pValueExponent
@@ -104,16 +103,22 @@ query Variant($variantId: String!) {
 # ---- pure shaping helpers ----------------------------------------------------
 
 def summarize_gwas_evidence(data: dict[str, Any]) -> dict[str, Any]:
-    """Flatten disease→GWAS-credible-set evidence rows for one target into L2G-centric records."""
+    """Flatten disease→GWAS-credible-set evidence rows for one target into L2G-centric records.
+
+    `Evidence` (gwas_credible_sets datasource) exposes the credible-set-derived association score
+    (used as the L2G-linked evidence score), the lead `variant` object, the study, and stats. The
+    lead variant id feeds get_variant / credible-set drill-down.
+    """
     disease = data.get("disease") or {}
     ev = disease.get("evidences") or {}
     rows = []
     for r in ev.get("rows", []):
+        variant = r.get("variant") or {}
+        rs = r.get("variantRsId") or ((variant.get("rsIds") or [None])[0])
         rows.append({
-            "studyLocusId": r.get("studyLocusId"),
             "l2gScore": r.get("score"),
-            "variantId": r.get("variantId"),
-            "rsId": r.get("variantRsId"),
+            "variantId": variant.get("id"),
+            "rsId": rs,
             "pValue": _pvalue(r.get("pValueMantissa"), r.get("pValueExponent")),
             "beta": r.get("beta"),
             "oddsRatio": r.get("oddsRatio"),
@@ -126,7 +131,7 @@ def summarize_gwas_evidence(data: dict[str, Any]) -> dict[str, Any]:
         "diseaseId": disease.get("id"),
         "count": ev.get("count", len(rows)),
         "topL2G": best["l2gScore"] if best else None,
-        "topLocus": best["studyLocusId"] if best else None,
+        "topVariant": best["variantId"] if best else None,
         "rows": rows,
     }
 

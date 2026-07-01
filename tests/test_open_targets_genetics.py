@@ -9,10 +9,10 @@ from mcp_servers.open_targets import genetics
 
 GWAS_EVIDENCE = {"disease": {"id": "EFO_0000729", "name": "ulcerative colitis", "evidences": {
     "count": 2, "rows": [
-        {"score": 0.61, "studyLocusId": "SL_other", "variantId": "5_1_A_T",
+        {"score": 0.61, "variant": {"id": "5_1_A_T", "rsIds": ["rs999"]},
          "variantRsId": "rs999", "pValueMantissa": 2.0, "pValueExponent": -6, "beta": 0.03,
          "oddsRatio": 1.03, "studyId": "GCST_x"},
-        {"score": 0.970, "studyLocusId": "SL_osmr", "variantId": "5_38953040_G_A",
+        {"score": 0.970, "variant": {"id": "5_38953040_G_A", "rsIds": ["rs395157"]},
          "variantRsId": "rs395157", "pValueMantissa": 2.68, "pValueExponent": -10, "beta": 0.0865,
          "oddsRatio": 1.09, "studyId": "GCST_liu"},
     ]}}}
@@ -55,9 +55,17 @@ def test_gwas_evidence_sorted_by_l2g():
     assert s["disease"] == "ulcerative colitis"
     assert s["count"] == 2
     assert s["topL2G"] == 0.970
-    assert s["topLocus"] == "SL_osmr"
+    assert s["topVariant"] == "5_38953040_G_A"       # lead variant of the top-L2G row
     assert s["rows"][0]["rsId"] == "rs395157"        # highest L2G first
+    assert s["rows"][0]["variantId"] == "5_38953040_G_A"
     assert s["rows"][0]["pValue"] == pytest.approx(2.68e-10)
+
+
+def test_gwas_evidence_falls_back_to_variant_rsids():
+    data = {"disease": {"name": "x", "evidences": {"count": 1, "rows": [
+        {"score": 0.5, "variant": {"id": "1_2_A_T", "rsIds": ["rs42"]}}]}}}
+    s = genetics.summarize_gwas_evidence(data)
+    assert s["rows"][0]["rsId"] == "rs42"            # rsId derived from variant.rsIds when absent
 
 
 def test_credible_set_finemapping_and_coloc():
@@ -92,4 +100,13 @@ def test_pvalue_helper_handles_missing():
 
 def test_empty_evidence():
     s = genetics.summarize_gwas_evidence({"disease": {"evidences": {"count": 0, "rows": []}}})
-    assert s["count"] == 0 and s["topL2G"] is None and s["rows"] == []
+    assert s["count"] == 0 and s["topL2G"] is None and s["topVariant"] is None and s["rows"] == []
+
+
+def test_genetics_smoke_script_imports():
+    # Guards against broken client references in the live smoke script (no network invoked).
+    import importlib
+    mod = importlib.import_module("mcp_servers.open_targets.smoke_genetics")
+    assert hasattr(mod, "main")
+    for fn in ("search", "first_target_hit", "disease_gwas_evidence", "credible_set", "variant"):
+        assert hasattr(mod.client, fn)

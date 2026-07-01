@@ -132,17 +132,18 @@ async def get_gwas_credible_set_evidence(
 ) -> dict:
     """Retrieve GWAS credible-set evidence linking a target to a disease, ranked by L2G score.
 
-    Each row is a fine-mapped credible set whose causal gene is (predicted to be) this target: it
-    carries the locus-to-gene (L2G) score, the lead variant (id + rsID), the association p-value /
-    beta / odds ratio, and the study. Use the returned studyLocusId with get_credible_set to drill
-    into fine-mapping posterior probabilities and QTL colocalization.
+    Each row is credible-set-derived evidence whose causal gene is (predicted to be) this target: it
+    carries the L2G-linked evidence score, the lead variant (id + rsID), the association
+    p-value / beta / odds ratio, and the study. Pass the returned lead variant id to get_variant for
+    annotation, or to get_credible_set to drill into fine-mapping posterior probabilities, L2G
+    predictions, and QTL colocalization.
     """
     data = await client.disease_gwas_evidence(ensembl_id, efo_id, size=size)
     s = client.genetics.summarize_gwas_evidence(data)
     return _env(
         f"{s['count']} GWAS credible-set evidence row(s) for the target in {s['disease']}; "
-        f"top L2G={s['topL2G']} (locus {s['topLocus']}).",
-        s, preview={"topL2G": s["topL2G"], "topLocus": s["topLocus"]},
+        f"top L2G={s['topL2G']} (lead variant {s['topVariant']}).",
+        s, preview={"topL2G": s["topL2G"], "topVariant": s["topVariant"]},
     )
 
 
