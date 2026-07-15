@@ -15,6 +15,18 @@ Tabula Sapiens, Tahoe-100M, cBioPortal, OpenFDA, and more).
 > **Status:** early scaffold. See [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md) for the
 > phased roadmap and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the system design.
 
+## Repository
+
+This project is mirrored to two remotes:
+
+| Remote | Visibility | URL |
+|--------|------------|-----|
+| `origin` (GitLab) | Private | `git@gitlab.com:IntelligenciaAI/virtualbiotech.git` |
+| `github` (GitHub) | Public | [https://github.com/gliaropoulos/virtualbiotech](https://github.com/gliaropoulos/virtualbiotech) |
+
+Day-to-day work uses the private GitLab remote (`origin`). The public GitHub mirror is for
+open visibility; push there with `git push github`.
+
 ## Stack
 
 Python 3.10+ · [Claude Agent SDK](https://docs.claude.com) (orchestration) · FastMCP (tools) ·
